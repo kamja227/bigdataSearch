@@ -1,0 +1,77 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
+<meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<style>
+	body{
+		margin: 0;
+		padding:0;
+	}
+	li{
+		margin-left: 20px;
+	}
+	ul>li>a{
+		color: white;
+	}
+	.nav-link:active, .nav-link:focus, .nav-link:hover, ul>li>a:focus, ul>li>a:hover{
+		color: black;
+		font-weight: bold; 
+	}
+	.searchForm_input{
+		height:30px;
+		margin: 10px;
+		text-align: center;
+	}
+	.btn_custom{
+		margin-left:1px;
+		height: 35px;
+	}
+	.btn_custom{
+		border: 1px solid gray;
+		font-weight: bold;
+	}
+	.contents{
+		width: 100%;
+		text-align: center;
+		margin: 0px auto;
+		margin-top: 10px;
+		margin-bottom: 20px;
+	}
+	.table{
+		width: 80%;
+		margin: 0px auto;
+		text-align: center;
+	}
+	.table>thead>tr>th{
+		text-align: center;
+	}
+	.activeNav{
+		color: black;
+		font-weight: bold; 
+		text-decoration: underline;
+	}
+}
+</style>
+<nav class="navbar fixed-top navbar-expand-md navbar-light" style="padding:0px 12px; background-color: lightgray; width:100%;">
+	<!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>     -->
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">  
+		<ul class="nav navbar-nav pull-left  ml-auto ">
+	        <li class="nav-item"><a class="nav-link" id="excel" href="${pageContext.request.contextPath }/excel">엑셀 파일 업로드</a></li>
+	        <li class="nav-item"><a class="nav-link" id="dataSearch" href="${pageContext.request.contextPath }/dataSearch">원천 데이터 확인</a></li>
+	        <li class="nav-item"><a class="nav-link" id="tableSearch" href="${pageContext.request.contextPath }/tableSearch">테이블별 데이터 확인</a></li>
+	        <%-- <li class="nav-item"><a class="nav-link" id="tableManage" href="${pageContext.request.contextPath }/tableManage">테이블 관리</a></li> --%>
+	       	<li class="nav-item"><a class="nav-link" id="uploadLog" href="${pageContext.request.contextPath }/uploadLog">데이터 업로드 내역 확인</a></li>
+        </ul>
+    </div>
+</nav>

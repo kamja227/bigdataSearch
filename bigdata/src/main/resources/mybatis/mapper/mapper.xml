@@ -1,0 +1,2067 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.encgls.bigdata.dao.SampleDAO">
+	<select id="columnList" parameterType="String" resultType="map">
+		select column_name as COLUMN_NAME, upper(data_type) as DATA_TYPE from INFORMATION_SCHEMA.columns 
+		where table_name=#{tableName} order by ordinal_position
+	</select>   
+	<!-- <select id = "list" parmeterType="map" resultType="hashMap">
+      select #{columns} from #{table} order by id desc
+   </select> -->
+   <select id="selectTable" parameterType="map" resultType="map">
+   		select
+   		<foreach collection="column" item="item" separator=", ">
+   			${item}
+   		</foreach>
+   		 from ${tableName}
+   		 <choose>
+   			<when test="standardDate!=null">
+   				where date_format(${standardDate}, '%Y-%m-%d') &gt;= #{fromDate} and 
+   					  date_format(${standardDate}, '%Y-%m-%d') &lt;= #{toDate} 
+   			</when>
+   			<otherwise></otherwise>
+   		</choose>
+   		<!-- order by date ${order} -->
+   		limit ${startNum}, ${cntByPage}
+   </select>
+   <select id="selectEncTableList" resultType="map">
+   		select metatableid, metatablename from datatablelist
+   </select>
+   <select id="selectLogTable" parameterType="map" resultType="map">
+   		select  tableName, date_format(InsertTime, '%Y-%m-%d %H:%i:%s') as InsertTime from uploadlog
+   		order by InsertTime ${order}
+   		limit ${startNum}, ${cntByPage}
+   </select>
+   <select id="cntUploadLogRecords" parameterType="map" resultType="int">
+   		select count(*) from uploadlog 
+   			<choose>
+	   			<when test="table==null and searchDate==null"></when>
+	   			<when test="table!=null and searchDate==null">
+	   				where tableName=#{table}
+	   			</when>
+	   			<when test="table==null and searchDate!=null">
+	   				where date_format(InsertTime, '%Y-%m-%d')=#{searchDate}
+	   			</when>
+	   			<when test="dataType!=null and dataType!=null">
+	   				where tableName=#{table} and date_format(InsertTime, '%Y-%m-%d')=#{searchDate}
+	   			</when>
+	   		</choose>
+   </select>
+   <select id="cntAllRecords" parameterType="map" resultType="int">
+   		select count(*) from ${table}
+		<choose>
+   			<when test="standardDate!=null">
+   				where date_format(${standardDate}, '%Y-%m-%d') &gt;= #{fromDate} and 
+   					  date_format(${standardDate}, '%Y-%m-%d') &lt;= #{toDate} 
+   			</when>
+   			<otherwise></otherwise>
+   		</choose>
+   </select>
+
+    <!-- 스케쳐스입고S -->
+   <insert id = "insertSkxInwS"  parameterType="hashMap" >
+      insert into skx_inw
+      (
+         skx_inw_pk
+       ,  RCVKEY                     /* 입고키 */
+       ,  SUPPLIERCD                  /* 거래처코드 */
+       ,  SUPPLIERNAME            /* 거래처명 */
+       ,  RCVTYPE                      /* 입고타입 */
+        , IFITEMCD                      /* 바코드 */
+       ,  STS                           /* 상태 */
+       ,  RCVSCHDATE               /* 입고예정일 */
+       ,  RECEIVEDATE               /* 입고실적일 */
+       ,  WAREHOUSECD               /* 창고코드 */
+       ,    LOT1
+       ,    EXPECTQTY1               /* 예정수량 */
+       ,   RECEIVEDQTY1             /* 입고수량 */
+       ,   WAREHOUSENAME         /* 창고명 */
+       ,   ADDRESS1                     /* 주소1 */
+       ,   OTHERREFNO2
+       ,   ADDRESS2                  /* 주소2 */
+       ,   NOTES
+       ,   COMPANYCD               /* 회사코드 */
+       ,   COMPANYNAME            /* 회사명 */
+       ,   RCVLINENO                  /* 입고품목행번호 */
+       ,   ITEMGROUP                  /* 품목그룹 */
+       ,   PODATE                     /* 발주일 */
+       ,   ITEMCD                     /* 품목코드 */
+       ,   OWNERCD                     /* 화주코드 */
+       ,   ITEMNAME                  /* 품목명 */
+       ,   SD_NOTES                  /* 상품비고 */
+       ,   CRUD
+       ,   OWNERNM                  /* 화주명 */
+       ,   IFDATE
+       ,   LOCCD
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+          enc_bigdata.enc_bigdata_seq( 
+          'skx_inw'
+      ,   #{item.G, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   #{item.D}
+      ,   #{item.E}
+      ,   #{item.F}
+      ,     enc_bigdata.date_invert(#{item.G})
+      ,     enc_bigdata.date_invert(#{item.H})
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   #{item.K}  
+      ,   #{item.L}  
+      ,   #{item.M}
+      ,   #{item.N}
+      ,     enc_bigdata.date_invert(#{item.O})
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   enc_bigdata.date_invert(#{item.V})
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   enc_bigdata.date_invert(#{item.AC})
+      ,   #{item.AD}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 스케쳐스입고B -->
+   <insert id = "insertSkxInwB"  parameterType="hashMap">
+      insert into skx_inw2 
+      (  
+         skx_inw_pk
+       ,   RCVKEY                         /* 입고키 */
+       ,  RCVTYPE                        /* 입고타입 */
+       ,  STS                              /* 상태 */
+       ,  RCVSCHDATE                  /* 입고예정일 */
+       ,  RECEIVEDATE                  /* 입고실적일 */
+       ,  WAREHOUSECD                  /* 창고코드 */
+       ,  WAREHOUSENAME            		/* 창고명 */
+       ,  SUPPLIERCD                     /* 거래처코드 */
+       ,  SUPPLIERNAME               /* 거래처명 */
+       ,    ADDRESS1                        /* 주소1 */
+       ,    ADDRESS2                     /* 주소2 */
+       ,   NOTES
+       ,   OTHERREFNO2
+       ,   COMPANYCD                  /* 회사코드 */
+       ,   COMPANYNAME               /* 회사명 */
+       ,   RCVLINENO                     /* 입고품목행번호 */
+       ,   PODATE                        /* 발주일 */
+       ,   OWNERCD                        /* 화주코드 */
+       ,   OWNERNM                     /* 화주명 */
+       ,   ITEMGROUP                     /* 품목그룹 */
+       ,   ITEMCD                        /* 품목코드 */
+       ,   ITEMNAME                     /* 품목명 */
+       ,   IFITEMCD                        /* 바코드 */
+       ,   LOT1
+       ,   EXPECTQTY1                  /* 예정수량 */
+       ,   RECEIVEDQTY1                /* 입고수량 */
+       ,   SD_NOTES                     /* 상품비고 */
+       ,   LOCCD
+       ,   IFDATE
+       ,   CRUD
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'skx_inw'
+      ,   #{item.D, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   enc_bigdata.date_invert(#{item.D})
+      ,   enc_bigdata.date_invert(#{item.E})
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   #{item.K}
+      ,   #{item.L}
+      ,   enc_bigdata.date_invert(#{item.M})
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   enc_bigdata.date_invert(#{item.Q})
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   enc_bigdata.date_invert(#{item.AC})
+      ,   #{item.AD}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 스케쳐스출고S -->
+   <insert id = "insertSkxExwS"  parameterType="hashMap">
+      insert into skx_exw
+      ( 
+         skx_exw_pk 
+       ,   UPDUSERCD1
+       ,  SOKEY                     /* 출고키 */
+       ,  DELIVERYCD               /* 배송코드 */
+       ,  ACTFLG                  /* 활동중플래그 */
+       ,  PICKBATCHKEY            /* 배치키 */
+       ,  ASSYKEY                  /* 보충키 */
+       ,  SOTYPE                   /* 출고타입 */
+       ,  STS                         /* 출고상태 */
+       ,  ORDERDATE               /* 주문일 */
+       ,    DELIVNAME               /* 수취인 */
+       ,    SHIPSCHDATE            /* 출고일 */
+       ,   SHIPDATE                  /* 출고완료일 */
+       ,   PRIORITIES               /* 차수 */
+       ,   OWNERCD                  /* 화주 */
+       ,   ITEMCD                  /* 품목코드 */
+       ,   EXPECTQTY1            /* 출고예정수량 */
+       ,   SHIPPEDQTY1            /* 출고완료수 */
+       ,   CUSTOMERCD            /* 거래처코드 */
+       ,   OWNERNM               /* 화주명 */
+       ,   ORDERTYPE               /* 주문타입 */
+       ,   DELIVSCHDATE            /* 배송예정일 */
+       ,   DELIVDATE               /* 배송 */
+       ,   TRANSPORTPRIORITY
+       ,   WAREHOUSECD         /* 창고코드 */
+       ,   OTHERREFNO3            /* 셀번 */
+       ,   WAREHOUSENM         /* 창고명 */
+       ,   PREKEY                  /* 출하지시번호 */
+       ,   CUSTOMERNM            /* 거래처명 */
+       ,   SHIPTOCD                  /* 납품처코드 */
+       ,   SHIPTONM               /* 납품처 */
+       ,   ADDRESS1                  /* 주소 */
+       ,   ADDRESS2               /* 주소2 */
+       ,   POSTNO1                  /* 우편번호1 */
+       ,   POSTNO2                  /* 우편번호2 */
+       ,   HPNO                     /* 전화번호 */
+       ,   EMAIL
+       ,   REFNAME
+       ,   ALLOCGROUP
+       ,   NOTES                     /* 비고 */
+       ,   OTHERREFNO1
+       ,   OTHERREFNO2
+       ,   MOVEKEY               /* 이동키 */
+       ,   WBKEY                     /* 운송장키 */
+       ,   ADDDATETIME
+       ,   ADDUSERCD
+       ,   UPDDATETIME
+       ,   UPDUSERCD
+       ,   TERMINALCD
+       ,   ORDERCUSTNAME      /* 주문자 */
+       ,   ORDERCUSTPHONE      /* 주문자전화번호 */
+       ,   ORDERCUSTHP            /* 주문자핸드폰 */
+       ,   PHONENO                  /* 전화번호_1 */
+       ,   SOKEY1
+       ,   SOLINENO
+       ,   ORDERKEY
+       ,   ORDERLINENO
+       ,   ITEMGROUP               /* 품목그룹 */
+       ,   IFITEMCD                  /* 품목바코 */
+       ,   LOT1                        /* 속성1 */
+       ,   LOT2
+       ,   LOT3
+       ,   LOT4                     /* 제조일 */
+       ,   LOT5
+       ,   NOSHIPPINGFLG
+       ,   OTHERFLG
+       ,   XDOCKQTY1
+       ,   ALLOCQTY1
+       ,   PICKEDQTY1
+       ,   SORTEDQTY1
+       ,   ADJUSTQTY1
+       ,   PRICE1                     /* 단가 */
+       ,   PRICE2                     /* 금액 */
+       ,   PRICE3                     /* 부가세 */
+       ,   NOTES1                  /* 상품비고 */
+       ,   LOTRESERVEFLG
+       ,   PICKQTYERRORFLG      /* 재고부족플래 */
+       ,   XDOCFLG
+       ,   MOVELINENO
+       ,   ASSYLINENO
+       ,   ADDDATETIME1
+       ,   ADDUSERCD1
+       ,   UPDDATETIME1
+       ,   TERMINALCD1
+       ,   SHOPITEMCD
+       ,   OTHERVALUE1            /* 사방넷주문번호 */
+       ,   OTHERVALUE2            /* 채널주문번호 */
+       ,   FAX1
+       ,   CONFIRMQTY
+       ,   NAME                     /* 품목명 */
+       ,   CONDATE                  /* 출고확정시간 */
+       ,   CRUD
+       ,   SODAY
+       ,   IFDATE
+       ,   IFSODAY
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'skx_exw'
+      ,   #{item.I, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   #{item.D}
+      ,   #{item.E}
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   enc_bigdata.date_invert(#{item.I})
+      ,   #{item.J}
+      ,   enc_bigdata.date_invert(#{item.K})
+      ,   enc_bigdata.date_invert(#{item.L})
+      ,   #{item.M}
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   enc_bigdata.date_invert(#{item.U})
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   #{item.AC}
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   #{item.AF}
+      ,   #{item.AG}
+      ,   #{item.AH}
+      ,   #{item.AI}
+      ,   #{item.AJ}
+      ,   #{item.AK}
+      ,   #{item.AL}
+      ,   #{item.AM}
+      ,   #{item.AN}
+      ,   #{item.AO}
+      ,   #{item.AP}
+      ,   #{item.AQ}
+      ,   enc_bigdata.date_invert(#{item.AR})
+      ,   #{item.AS}
+      ,   enc_bigdata.date_invert(#{item.AT})
+      ,   #{item.AU}
+      ,   #{item.AV}
+      ,   #{item.AW}
+      ,   #{item.AX}
+      ,   #{item.AY}
+      ,   #{item.AZ}
+      ,   #{item.BA}
+      ,   #{item.BB}
+      ,   #{item.BC}
+      ,   #{item.BD}
+      ,   #{item.BE}
+      ,   #{item.BF}
+      ,   #{item.BG}
+      ,   #{item.BH}
+      ,   #{item.BI}
+      ,   enc_bigdata.date_invert(#{item.BJ})
+      ,   #{item.BK}
+      ,   #{item.BL}
+      ,   #{item.BM}
+      ,   #{item.BN}
+      ,   #{item.BO}
+      ,   #{item.BP}
+      ,   #{item.BQ}
+      ,   #{item.BR}
+      ,   #{item.BS}
+      ,   #{item.BT}
+      ,   #{item.BU}
+      ,   #{item.BV}
+      ,   #{item.BW}
+      ,   #{item.BX}
+      ,   #{item.BY}
+      ,   #{item.BZ}
+      ,   #{item.CA}
+      ,   enc_bigdata.date_invert(#{item.CB})
+      ,   #{item.CC}
+      ,   enc_bigdata.date_invert(#{item.CD})
+      ,   #{item.CE}
+      ,   #{item.CF}
+      ,   #{item.CG}
+      ,   #{item.CH}
+      ,   #{item.CI}
+      ,   #{item.CJ}
+      ,   #{item.CK}
+      ,   enc_bigdata.date_invert(#{item.CL})
+      ,   #{item.CM}
+      ,   #{item.CN}
+      ,   enc_bigdata.date_invert(#{item.CO})
+      ,   #{item.CP}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 스케쳐스출고B -->
+   <insert id = "insertSkxExwB"  parameterType="hashMap">
+      insert into skx_exw2 
+      (  
+         skx_exw_pk 
+       ,   SOKEY                  /* 출고키 */
+       ,  PREKEY               /* 출하지시번호 */
+       ,  SOTYPE               /* 출고타입 */
+       ,  ACTFLG                /* 활동중플래그 */
+       ,  STS                     /* 출고상태 */
+       ,  PRIORITIES            /* 차수 */
+       ,  OWNERCD               /* 화주 */
+       ,  OWNERNM             /* 화주명 */
+       ,  ORDERTYPE            /* 주문타입 */
+       ,    ORDERDATE            /* 주문일 */
+       ,    SHIPSCHDATE         /* 출고일 */
+       ,   SHIPDATE               /* 출고완료일 */
+       ,   DELIVSCHDATE         /* 배송예정일 */
+       ,   DELIVDATE            /* 배송 */
+       ,   TRANSPORTPRIORITY
+       ,   WAREHOUSECD      /* 창고코드 */
+       ,   WAREHOUSENM      /* 창고명 */
+       ,   CUSTOMERCD         /* 거래처코드 */
+       ,   CUSTOMERNM         /* 거래처명 */
+       ,   SHIPTOCD               /* 납품처코드 */
+       ,   SHIPTONM            /* 납품처 */
+       ,   DELIVNAME            /* 수취인 */
+       ,   ADDRESS1               /* 주소 */
+       ,   ADDRESS2            /* 주소2 */
+       ,   POSTNO1               /* 우편번호1 */
+       ,   POSTNO2               /* 우편번호2 */
+       ,   HPNO                  /* 전화번호 */
+       ,   FAX1
+       ,   EMAIL
+       ,   REFNAME
+       ,   ALLOCGROUP
+       ,   DELIVERYCD            /* 배송코드 */
+       ,   NOTES                  /* 비고 */
+       ,   OTHERREFNO1
+       ,   OTHERREFNO2
+       ,   OTHERREFNO3         /* 셀번 */
+       ,   PICKBATCHKEY         /* 배치키 */
+       ,   MOVEKEY            /* 이동키 */
+       ,   ASSYKEY               /* 보충키 */
+       ,   WBKEY                  /* 운송장키 */
+       ,   ADDDATETIME
+       ,   ADDUSERCD
+       ,   UPDDATETIME
+       ,   UPDUSERCD
+       ,   TERMINALCD
+       ,   ORDERCUSTNAME   /* 주문자 */
+       ,   ORDERCUSTPHONE   /* 주문자전화번호 */
+       ,   ORDERCUSTHP         /* 주문자핸드폰 */
+       ,   PHONENO               /* 전화번호_1 */
+       ,   SOKEY1
+       ,   ITEMGROUP            /* 품목그룹 */
+       ,   SOLINENO
+       ,   ORDERKEY
+       ,   ORDERLINENO
+       ,   ITEMCD               /* 품목코드 */
+       ,   IFITEMCD               /* 품목바코 */
+       ,   LOT1                     /* 속성1 */
+       ,   LOT2
+       ,   LOT3
+       ,   LOT4                  /* 제조일 */
+       ,   LOT5
+       ,   NOSHIPPINGFLG
+       ,   OTHERFLG
+       ,   EXPECTQTY1         /* 출고예정수량 */
+       ,   XDOCKQTY1
+       ,   ALLOCQTY1
+       ,   PICKEDQTY1
+       ,   SORTEDQTY1
+       ,   SHIPPEDQTY1         /* 출고완료수 */
+       ,   ADJUSTQTY1
+       ,   PRICE1                  /* 단가 */
+       ,   PRICE2                  /* 금액 */
+       ,   PRICE3                  /* 부가세 */
+       ,   NOTES1               /* 상품비고 */
+       ,   LOTRESERVEFLG
+       ,   PICKQTYERRORFLG   /* 재고부족플래 */
+       ,   XDOCFLG
+       ,   MOVELINENO
+       ,   ASSYLINENO
+       ,   ADDDATETIME1
+       ,   ADDUSERCD1
+       ,   UPDDATETIME1
+       ,   UPDUSERCD1
+       ,   TERMINALCD1
+       ,   SHOPITEMCD
+       ,   OTHERVALUE1         /* 사방넷주문번호 */
+       ,   OTHERVALUE2         /* 채널주문번호 */
+       ,   CONFIRMQTY
+       ,   NAME                  /* 품목명 */
+       ,   CONDATE               /* 출고확정시간 */
+       ,   IFDATE
+       ,   SODAY
+       ,   IFSODAY
+       ,   CRUD
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'skx_exw'
+      ,   #{item.J, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   #{item.D}
+      ,   #{item.E}
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   enc_bigdata.date_invert(#{item.J})
+      ,   enc_bigdata.date_invert(#{item.K})
+      ,   enc_bigdata.date_invert(#{item.L})
+      ,   enc_bigdata.date_invert(#{item.M})
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   #{item.AC}
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   #{item.AF}
+      ,   #{item.AG}
+      ,   #{item.AH}
+      ,   #{item.AI}
+      ,   #{item.AJ}
+      ,   #{item.AK}
+      ,   #{item.AL}
+      ,   #{item.AM}
+      ,   #{item.AN}
+      ,   enc_bigdata.date_invert(#{item.AO})
+      ,   #{item.AP}
+      ,   enc_bigdata.date_invert(#{item.AQ})
+      ,   #{item.AR}
+      ,   #{item.AS}
+      ,   #{item.AT}
+      ,   #{item.AU}
+      ,   #{item.AV}
+      ,   #{item.AW}
+      ,   #{item.AX}
+      ,   #{item.AY}
+      ,   #{item.AZ}
+      ,   #{item.BA}
+      ,   #{item.BB}
+      ,   #{item.BC}
+      ,   #{item.BD}
+      ,   #{item.BE}
+      ,   #{item.BF}
+      ,   #{item.BG}
+      ,   enc_bigdata.date_invert(#{item.BH})
+      ,   #{item.BI}
+      ,   #{item.BJ}
+      ,   #{item.BK}
+      ,   #{item.BL}
+      ,   #{item.BM}
+      ,   #{item.BN}
+      ,   #{item.BO}
+      ,   #{item.BP}
+      ,   #{item.BQ}
+      ,   #{item.BR}
+      ,   #{item.BS}
+      ,   #{item.BT}
+      ,   #{item.BU}
+      ,   #{item.BV}
+      ,   #{item.BW}
+      ,   #{item.BX}
+      ,   #{item.BY}
+      ,   #{item.BZ}
+      ,   #{item.CA}
+      ,   enc_bigdata.date_invert(#{item.CB})
+      ,   #{item.CC}
+      ,   enc_bigdata.date_invert(#{item.CD})
+      ,   #{item.CE}
+      ,   #{item.CF}
+      ,   #{item.CG}
+      ,   #{item.CH}
+      ,   #{item.CI}
+      ,   #{item.CJ}
+      ,   #{item.CK}
+      ,   enc_bigdata.date_invert(#{item.CL})
+      ,   enc_bigdata.date_invert(#{item.CM})
+      ,   #{item.CN}
+      ,   #{item.CO}
+      ,   #{item.CP}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 스케쳐스반품S -->
+   <insert id = "insertSkxRtnS"  parameterType="hashMap">
+      insert into skx_rtn
+      (  
+         skx_rtn_pk
+       ,   TERMINALCD
+       ,  RCVKEY                              /* 반품키 */
+       ,  RCVTYPE                              /* 입고타입 */
+       ,  RCVSCHDATE                        /* 입고예정일 */
+       ,  RECEIVEDATE                        /* 입고실적일 */
+       ,  STS                                    /* 상태 */
+       ,  WAREHOUSECD                        /* 창고코드 */
+       ,  SUPPLIERNAME                     /* 반품거래처명 */
+       ,  SUPPLIERCD                           /* 반품거래처코드 */
+       ,    ACCEPTKEY                           /* 입고지시키 */
+       ,    ACCEPTUSERCD                     /* 입고지시담당자 */
+       ,   REFNAME                              /* 고객명 */
+       ,   ADDRESS2                           /* 주소2 */
+       ,   OTHERREFNO2                        /* 주문번호 */
+       ,   OTHERREFNO1                        /* 운송장번호 */
+       ,   NOTES                                 /* 비고 */
+       ,   ADDRESS1                              /* 주소1 */
+       ,   OTHERREFNO3                        /* 출고키 */
+       ,   RECEIVEDUSERCD                     /* 센터입고일 */
+       ,   SUPPLIERPHONE
+       ,   COMPANYCD                        /* 회사코드 */
+       ,   COMPANYNAME                     /* 회사명 */
+       ,   RCVLINENO                           /* 반품품목행번호 */
+       ,   PODATE                              /* 발주일 */
+       ,   OWNERCD                              /* 하주코드 */
+       ,   ITEMCD                              /* 품목코드 */
+       ,   ITEMNAME                           /* 품목명 */
+       ,   OWNERNM                           /* 하주명 */
+       ,   IFITEMCD                              /* 바코드 */
+       ,   LOT1
+       ,   EXPECTQTY1                        /* 예정수량 */
+       ,   ITEMGROUP                           /* 품목그룹 */
+       ,   REALEXPECTQTY                  /* 예정수량_1 */
+       ,   RECEIVEDQTY1                        /* 확정수량 */
+       ,   SD_NOTES                           /* 품목비고 */
+       ,   ADDDATETIME
+       ,   COMPANYCD1
+       ,   ADDTIME
+       ,   UPDTIME
+       ,   CRUD
+       ,   ADDUSERCD
+       ,   UPDDATETIME
+       ,   DIFQTY1
+       ,   DAMAGEFLG
+       ,   UPDUSERCD
+       ,   WAREHOUSENAME                  /* 창고명 */
+       ,   RCVEDDAYCNT
+       ,   IFDATE                                 /* IF일시 */
+       ,   IFDAYCNT
+       ,   RTNTIME
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'skx_rtn'
+      ,   #{item.D , mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   enc_bigdata.date_invert(#{item.D})
+      ,   enc_bigdata.date_invert(#{item.E})
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   #{item.K}
+      ,   #{item.L}
+      ,   #{item.M}
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   enc_bigdata.date_invert(#{item.S})
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   enc_bigdata.date_invert(#{item.X})
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   #{item.AC}
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   #{item.AF}
+      ,   #{item.AG}
+      ,   #{item.AH}
+      ,   #{item.AI}
+      ,   enc_bigdata.date_invert(#{item.AJ})
+      ,   #{item.AK}
+      ,   enc_bigdata.date_invert(#{item.AL})
+      ,   enc_bigdata.date_invert(#{item.AM})
+      ,   #{item.AN}
+      ,   #{item.AO}
+      ,   enc_bigdata.date_invert(#{item.AP})
+      ,   #{item.AQ}
+      ,   #{item.AR}
+      ,   #{item.AS}
+      ,   #{item.AT}
+      ,   #{item.AU}
+      ,   enc_bigdata.date_invert(#{item.AV})
+      ,   #{item.AW}
+      ,   enc_bigdata.date_invert(#{item.AX})
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 스케쳐스반품B -->
+   <insert id = "insertSkxRtnB"  parameterType="hashMap">
+      insert into skx_rtn2
+      (  
+         skx_rtn_pk
+       ,   RCVKEY                              /* 반품키 */
+       ,  RCVTYPE                              /* 입고타입 */
+       ,    STS                                     /* 상태 */
+       ,  RCVSCHDATE                        /* 입고예정일 */
+       ,  RECEIVEDATE                        /* 입고실적일 */
+       ,    WAREHOUSECD                      /* 창고코드 */
+       ,  WAREHOUSENAME                  /* 창고명 */
+       ,  SUPPLIERCD                           /* 반품거래처코드 */
+       ,    SUPPLIERNAME                      /* 반품거래처명 */
+       ,    ACCEPTKEY                           /* 입고지시키 */
+       ,    ACCEPTUSERCD                     /* 입고지시담당자 */
+       ,   ADDRESS1                              /* 주소1 */
+       ,   ADDRESS2                           /* 주소2 */
+       ,   REFNAME                              /* 고객명 */
+       ,   NOTES                                 /* 비고 */
+       ,   OTHERREFNO1                        /* 운송장번호 */
+       ,   OTHERREFNO2                        /* 주문번호 */
+       ,   OTHERREFNO3                        /* 출고키 */
+       ,   SUPPLIERPHONE
+       ,   RECEIVEDUSERCD                     /* 센터입고일 */
+       ,   COMPANYCD                        /* 회사코드 */
+       ,   COMPANYNAME                     /* 회사명 */
+       ,   RCVLINENO                           /* 반품품목행번호 */
+       ,   PODATE                              /* 발주일 */
+       ,   OWNERCD                              /* 하주코드 */
+       ,   OWNERNM                           /* 하주명 */
+       ,   ITEMCD                              /* 품목코드 */
+       ,   ITEMNAME                           /* 품목명 */
+       ,   ITEMGROUP                           /* 품목그룹 */
+       ,   IFITEMCD                              /* 바코드 */
+       ,   LOT1
+       ,   DAMAGEFLG
+       ,   EXPECTQTY1                        /* 예정수량 */
+       ,   REALEXPECTQTY                  /* 예정수량_1 */
+       ,   RECEIVEDQTY1                        /* 확정수량 */
+       ,   DIFQTY1
+       ,   SD_NOTES                           /* 품목비고 */
+       ,   ADDDATETIME
+       ,   ADDUSERCD
+       ,   UPDDATETIME
+       ,   UPDUSERCD
+       ,   TERMINALCD
+       ,   COMPANYCD1
+       ,   ADDTIME
+       ,   UPDTIME
+       ,   IFDATE                                 /* IF일시 */
+       ,   RCVEDDAYCNT
+       ,   IFDAYCNT
+       ,   RTNTIME
+       ,   CRUD
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'skx_rtn'
+      ,   #{item.D, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   enc_bigdata.date_invert(#{item.D})
+      ,   enc_bigdata.date_invert(#{item.E})
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   #{item.K}
+      ,   #{item.L}
+      ,   #{item.M}
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   enc_bigdata.date_invert(#{item.T})
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   enc_bigdata.date_invert(#{item.X})
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   #{item.AC}
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   #{item.AF}
+      ,   #{item.AG}
+      ,   #{item.AH}
+      ,   #{item.AI}
+      ,   #{item.AJ}
+      ,   #{item.AK}
+      ,   enc_bigdata.date_invert(#{item.AL})
+      ,   #{item.AM}
+      ,   enc_bigdata.date_invert(#{item.AN})
+      ,   #{item.AO}
+      ,   #{item.AP}
+      ,   #{item.AQ}
+      ,   enc_bigdata.date_invert(#{item.AR})
+      ,   enc_bigdata.date_invert(#{item.AS})
+      ,   enc_bigdata.date_invert(#{item.AT})
+      ,   #{item.AU}
+      ,   #{item.AV}
+      ,   enc_bigdata.date_invert(#{item.AW})
+      ,   #{item.AX}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 쏨니아출고 -->
+   <insert id = "insertSomExw"  parameterType="hashMap">
+      insert into som_exw 
+      (  
+         som_exw_pk
+       ,   PRIORITIES               /* 차수 */
+       ,  SOKEY                     /* 출고키 */
+       ,  PREKEY                  /* 주문코드 */
+       ,  OTHERVALUE1            /* 주문품주번호 */
+       ,  WAYBILLNO               /* 운송장 */
+       ,  MESSAGE
+       ,  SOTYPE                  /* 출고타입 */
+       ,  STS                        /* 출고상태 */
+       ,  ACTFLG                  /* 활동중플래그 */
+       ,    OWNERCD                  /* 화주 */
+       ,    ORDERDATE               /* 주문일 */
+       ,   SHIPDATE                  /* 출고완료일 */
+       ,   SHIPSCHDATE            /* 출고예정일 */
+       ,   CUSTOMERCD            /* 거래처코드 */
+       ,   ORDERTYPE               /* 주문타입 */
+       ,   DELIVNAME               /* 수취인 */
+       ,   ADDRESS1                  /* 주소 */
+       ,   POSTNO
+       ,   ADDRESS2               /* 주소2 */
+       ,   PHONENO                  /* 전화번호 */
+       ,   FAX1
+       ,   EMAIL
+       ,   REFNAME
+       ,   CUSTOMERNM            /* 거래처명 */
+       ,   OWNERNM               /* 화주명 */
+       ,   ALLOCGROUP
+       ,   NOTES                     /* 비고 */
+       ,   OTHERREFNO2            /* 판매경로 */
+       ,   OTHERREFNO3            /* 셀번 */
+       ,   PICKBATCHKEY            /* 배치키 */
+       ,   MOVEKEY               /* 이동키 */
+       ,   ASSYKEY                  /* 보충키 */
+       ,   NAME                     /* 품목명 */
+       ,   ADDDATETIME
+       ,  ADDUSERCD
+       ,  UPDDATETIME
+       ,  UPDUSERCD
+       ,  ORDERCUSTNAME      /* 주문자 */
+       ,  ORDERCUSTPHONE      /* 주문자전화번호 */
+       ,  ORDERCUSTHP            /* 주문자핸드폰 */
+       ,  HPNO                     /* 전화번호_1 */
+       ,  SOKEY1
+       ,  IFITEMCD                  /* 품목바코 */
+       ,  SOLINENO
+       ,  PICKQTYERRORFLG      /* 재고부족플래 */
+       ,  ITEMCD                  /* 품목코드 */
+       ,  LOT1                        /* 속성1 */
+       ,  LOT2
+       ,  LOT3
+       ,  EXPECTQTY1            /* 출고예정수량 */
+       ,  LOT5
+       ,  NOSHIPPINGFLG
+       ,  SHIPPEDOTY1            /* 출고완료수 */
+       ,  ADJUSTOTY1            /* 취소수량 */
+       ,  OTHERFLG
+       ,  XDOCKQTY1
+       ,  PICKEDOTY1               /* 피킹수량 */
+       ,  ALLOCQTY1
+       ,  SORTEDQTY1
+       ,  PRICE2                     /* 금액 */
+       ,  PRICE3
+       ,  NOTES1                     /* 상품비고 */
+       ,  LOTRESERVEFLG
+       ,  XDOCFLG
+       ,  MOVELINENO
+       ,  ASSYLINENO
+       ,  ADDDATETIME1
+       ,  ADDUSERCD1
+       ,  UPDDATETIME1
+       ,  UPDUSERCD1
+       ,  TERMINALCD1
+       ,  SHOPITEMCD
+       ,  OTHERVALUE2            /* 일련번호 */
+       ,  CONFIRMQTY
+       ,  MANUITEMCD
+       ,  CONDATE                  /* 출고확정시간 */
+       ,  CRUD
+       ,  CATEGORY2
+       ,  CATEGORY5
+       ,  ITEM_GUBUN
+       ,  ITEM_BOGJONG
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'som_exw'
+      ,   #{item.K, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   #{item.D}
+      ,   #{item.E}
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   enc_bigdata.date_invert(#{item.K})
+      ,   enc_bigdata.date_invert(#{item.L})
+      ,   enc_bigdata.date_invert(#{item.M})
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   #{item.AC}
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   #{item.AF}
+      ,   #{item.AG}
+      ,   enc_bigdata.date_invert(#{item.AH})
+      ,   #{item.AI}
+      ,   enc_bigdata.date_invert(#{item.AJ})
+      ,   #{item.AK}
+      ,   #{item.AL}
+      ,   #{item.AM}
+      ,   #{item.AN}
+      ,   #{item.AO}
+      ,   #{item.AP}
+      ,   #{item.AQ}
+      ,   #{item.AR}
+      ,   #{item.AS}
+      ,   #{item.AT}
+      ,   #{item.AU}
+      ,   #{item.AV}
+      ,   #{item.AW}
+      ,   #{item.AX}
+      ,   #{item.AY}
+      ,   #{item.AZ}
+      ,   #{item.BA}
+      ,   #{item.BB}
+      ,   #{item.BC}
+      ,   #{item.BD}
+      ,   #{item.BE}
+      ,   #{item.BF}
+      ,   #{item.BG}
+      ,   #{item.BH}
+      ,   #{item.BI}
+      ,   #{item.BJ}
+      ,   #{item.BK}
+      ,   #{item.BL}
+      ,   #{item.BM}
+      ,   #{item.BN}
+      ,   enc_bigdata.date_invert(#{item.BO})
+      ,   #{item.BP}
+      ,   enc_bigdata.date_invert(#{item.BQ})
+      ,   #{item.BR}
+      ,   #{item.BS}
+      ,   #{item.BT}
+      ,   #{item.BU}
+      ,   #{item.BV}
+      ,   #{item.BW}
+      ,   enc_bigdata.date_invert(#{item.BX})
+      ,   #{item.BY}
+      ,   #{item.BZ}
+      ,   #{item.CA}
+      ,   #{item.CB}
+      ,   #{item.CC}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 쏨니아입고 -->
+   <insert id = "insertSomInw"  parameterType="hashMap">
+      insert into som_inw 
+      (
+         som_inw_pk  
+       ,   RCVKEY                  /* 입고키 */
+       ,  RCVTYPE                  /* 입고타입 */
+       ,  STS                        /* 상태 */
+       ,  RCVSCHDATE            /* 입고예정일 */
+       ,  RECEIVEDATE            /* 입고실적일 */
+       ,  WAREHOUSECD            /* 창고코드 */
+       ,  WAREHOUSENAME      /* 창고명 */
+       ,  SUPPLIERCD               /* 거래처코드 */
+       ,  SUPPLIERNAME         /* 거래처명 */
+       ,    COMPANYCD            /* 회사코드 */
+       ,    COMPANYNAME         /* 회사명 */
+       ,   PODATE                  /* 발주일 */
+       ,   OWNERCD                  /* 화주코드 */
+       ,   OWNERNM               /* 화주명 */
+       ,   ITEMCD                  /* 품목코드 */
+       ,   MANUITEMCD
+       ,   CATEGORY2
+       ,   ADDRESS1                  /* 주소1 */
+       ,   NOTES
+       ,   ITEMNAME               /* 품목명 */
+       ,   RCVLINENO               /* 입고품목행번호 */
+       ,   ADDRESS2               /* 주소2 */
+       ,   LOT1
+       ,   LOT2
+       ,   LOT3
+       ,   EXPECTOTY1            /* 예정수량 */
+       ,   IFITEMCD                  /* 바코드 */
+       ,   RECEIVEDOTY1            /* 입고수량 */
+       ,   LOT4
+       ,   SD_NOTES               /* 상품비고 */
+       ,   CRUD
+       ,   LOT5
+       ,   ITEMSUPPLIERCD
+       ,   ITEMSUPPLIERNM
+       ,  CATEGORY5
+       ,  ITEM_GUBUN
+       ,  ITEM_BOGJONG
+       ,  MANUITEMCD1
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'som_inw'
+      ,   #{item.E, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   enc_bigdata.date_invert(#{item.D})
+      ,   enc_bigdata.date_invert(#{item.E})
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   #{item.K}
+      ,   enc_bigdata.date_invert(#{item.L})
+      ,   #{item.M}
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   enc_bigdata.date_invert(#{item.AC})
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   #{item.AF}
+      ,   #{item.AG}
+      ,   #{item.AH}
+      ,   #{item.AI}
+      ,   #{item.AJ}
+      ,   #{item.AK}
+      ,   #{item.AL}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 쏨니아반품 -->
+   <insert id = "insertSomRtn"  parameterType="hashMap">
+      insert into som_rtn 
+      ( 
+         som_rtn_pk
+       ,   RCVSCHDATE                  /* 입고예정일 */
+       ,  RECEIVEDATE                  /* 입고실적일 */
+       ,  RCVKEY                        /* 반품키 */
+       ,  RCVTYPE                        /* 입고타입 */
+       ,  STS                              /* 상태 */
+       ,  ITEMCD                        /* 품목코드 */
+       ,  ITEMNAME                     /* 품목명 */
+       ,  EXPECTQTY1                  /* 예정수량 */
+       ,  RECEIVEDOTY1                  /* 확정수량 */
+       ,    SUPPLIERCD                     /* 반품거래처코드 */
+       ,    SUPPLIERNAME               /* 반품거래처명 */
+       ,   ADDRESS1                        /* 주소1 */
+       ,   REFNAME                        /* 고객명 */
+       ,   NOTES                           /* 비고 */
+       ,   ADDRESS2                     /* 주소2 */
+       ,   OTHERREFNO1                  /* 반품택배비 */
+       ,   SUBORDERNUM               /* 부주문코드 */
+       ,   FROMREFNAME               /* 반품송장번호 */
+       ,   OTHERREFNO2                  /* 반품택배사명 */
+       ,   PREKEY                        /* 주문코드 */
+       ,   OTHERREFNO3                  /* 출고키 */
+       ,   SUPPLIERPHONE
+       ,   COMPANYCD                  /* 회사코드 */
+       ,   COMPANYNAME               /* 회사명 */
+       ,   REFNAME1
+       ,   ORG_WAYBILLNO               /* 출고송장번호 */
+       ,   SHIPDATE                        /* 출고일 */
+       ,   PODATE                        /* 발주일 */
+       ,   CRUD
+       ,   RCVLINENO                     /* 반품품목행번호 */
+       ,   OWNERCD                        /* 하주코드 */
+       ,   LOT1
+       ,   LOT2
+       ,   LOT3
+       ,  LOT4
+       ,  SMSID
+       ,  MANUITEMCD                  /* 품번 */
+       ,  CATEGORY2
+       ,  CATEGORY5
+       ,  ITEM_GUBUN
+       ,  ITEM_BOGJONG
+       ,  LOT5
+       ,  IFITEMCD                        /* 바코드 */
+       ,  OWNERNM                     /* 하주명 */
+       ,  SD_NOTES                     /* 품목비고 */
+       ,  DAMAGEFLG
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'som_rtn'
+      ,   #{item.B , mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   enc_bigdata.date_invert(#{item.A})
+      ,   enc_bigdata.date_invert(#{item.B})
+      ,   #{item.C}
+      ,   #{item.D}
+      ,   #{item.E}
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   #{item.K}
+      ,   #{item.L}
+      ,   #{item.M}
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   enc_bigdata.date_invert(#{item.AA})
+      ,   enc_bigdata.date_invert(#{item.AB})
+      ,   #{item.AC}
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   #{item.AF}
+      ,   #{item.AG}
+      ,   #{item.AH}
+      ,   enc_bigdata.date_invert(#{item.AI})
+      ,   #{item.AJ}
+      ,   #{item.AK}
+      ,   #{item.AL}
+      ,   #{item.AM}
+      ,   #{item.AN}
+      ,   #{item.AO}
+      ,   #{item.AP}
+      ,   #{item.AQ}
+      ,   #{item.AR}
+      ,   #{item.AS}
+      ,   #{item.AT}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 공동물류_출고 -->
+   <insert id = "insertLogisExw"  parameterType="hashMap">
+      insert into com_exw 
+      ( 
+         com_exw_pk  
+       ,   empty_place
+       ,  IoNO
+       ,  DoNo
+       ,  ShipDT
+       ,  DlvCD
+       ,  ShipTP
+       ,  RowNO
+       ,  ShipPlanDT
+       ,  ShipCfmDT
+       ,    BatchNO
+       ,    STAT
+       ,   SubStat
+       ,   PackTP
+       ,   DlvTP
+       ,   ChannelTP
+       ,   PickTP
+       ,   ADDR1
+       ,   ADDR2
+       ,   ZIP
+       ,   TEL
+       ,   OrderNM
+       ,   RecvNM
+       ,   CarrierCD
+       ,   DLV_PRIORITY
+       ,   RegTP
+       ,   RMK
+       ,   ErrTXT
+       ,   RegUSER
+       ,   UdtUSER
+       ,   RegDATE
+       ,  UdtDATE
+       ,  Cancel
+       ,  InspectDATE
+       ,  Upbatch
+       ,  OriginDO
+       ,  MallNm
+       ,  HP
+       ,  OrderTEL
+       ,    OrderHP
+       ,    InvoiceNO
+       ,   RowUse
+       ,   city_gun_gu
+       ,   tml_cd
+       ,   tml_nm
+       ,   dong
+       ,   filt_cd
+       ,   brnshp_nm
+       ,   ERR
+       ,   dlvClsfCd
+       ,   dlvSubClsfCd
+       ,   dlvPreArrBranShortNm
+       ,   dlvPreArrEmpNickNm
+       ,   dlvPreArrEmpNm
+       ,   rcvrClsfAddr
+       ,   rcvrShortAddr
+       ,   rcvrNewAddrYn
+       ,   rcvrEtcAddr
+       ,   errorCd
+       ,   rcvrZipnum
+       ,  orderNo
+       ,  errorMsg
+       ,  FiltDiv
+       ,  filt_sub_cd
+       ,  short_addr
+       ,  emp_nm
+       ,  emp_cd
+       ,  IoNO_2
+       ,    ItemCD
+       ,    OrdQTY
+       ,   AllocORD_QTY
+       ,   AllocQTY
+       ,   PackQty
+       ,   InspectQTY
+       ,   ConfirmQTY
+       ,   SubStat_1
+       ,   DTLRMK
+       ,   RegUSER_2
+       ,   UdtUSER_2
+       ,   RegDATE_2
+       ,   UdtDATE_2
+       ,   ItemDO
+       ,   IoNo_3
+       ,   InvoiceNo_2
+       ,   ItemCD_2
+       ,   CarrierCD_2
+       ,   ShipDT_2
+       ,   BatchNo_2
+       ,   BoxNO
+       ,  PackQty_2
+       ,  InspectQty_2
+       ,  RegUSER_3
+       ,  UdtUSER_3
+       ,  RegDATE_3
+       ,  UdtDATE_3
+       ,  FLAG
+       ,  plt
+       ,    inspectdate_2
+       ,    boxcd
+       ,   ItemCD_3
+       ,   ItemNM
+       ,   Flag_2
+       ,   BarcodeA
+       ,   BarcodeB
+       ,   BarcodeC
+       ,   HandleFlag
+       ,   ShortCD
+       ,   ShortNM
+       ,   AccountsCD
+       ,   SetFlag
+       ,   PurchaseDiv
+       ,   InPrice
+       ,   OutPrice
+       ,   TexType
+       ,   ItemDivA
+       ,   ItemDivB
+       ,   ItemDivC
+       ,   ItemBrand
+       ,  ItemLine
+       ,  ItemType
+       ,  ItemGender
+       ,  ItemCategory
+       ,  ItemProdYear
+       ,  ItemSeason
+       ,  ItemNo
+       ,  ItemSize
+       ,    ItemColor
+       ,    GoodsDiv
+       ,   KeepType
+       ,   StandardType
+       ,   BoxPerQty
+       ,   PLTPerQty
+       ,   PLTPerBoxQty
+       ,   Width
+       ,   Length
+       ,   Height
+       ,   Weight
+       ,   BoxCBM
+       ,   SumWLH
+       ,   CBM
+       ,   StockManage
+       ,   InOutManage
+       ,   LOTManage
+       ,   ProcessFlag
+       ,   AssignFlag
+       ,   ExpirydateFlag
+       ,   MixNoItem
+       ,  SingleFlag
+       ,  RMK_2
+       ,  RegistDate
+       ,  RegistUser
+       ,  ModifyDate
+       ,  ModifyUser
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'com_exw'
+      ,   #{item.AD, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   enc_bigdata.date_invert(#{item.D})
+      ,   #{item.E}
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   enc_bigdata.date_invert(#{item.H})
+      ,   enc_bigdata.date_invert(#{item.I})
+      ,   #{item.J}
+      ,   #{item.K}
+      ,   #{item.L}
+      ,   #{item.M}
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   #{item.R}
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   #{item.AC}
+      ,   enc_bigdata.date_invert(#{item.AD})
+      ,   enc_bigdata.date_invert(#{item.AE})
+      ,   #{item.AF}
+      ,   enc_bigdata.date_invert(#{item.AG})
+      ,   #{item.AH}
+      ,   #{item.AI}
+      ,   #{item.AJ}
+      ,   #{item.AK}
+      ,   #{item.AL}
+      ,   #{item.AM}
+      ,   #{item.AN}
+      ,   #{item.AO}
+      ,   #{item.AP}
+      ,   #{item.AQ}
+      ,   #{item.AR}
+      ,   #{item.AS}
+      ,   #{item.AT}
+      ,   #{item.AU}
+      ,   #{item.AV}
+      ,   #{item.AW}
+      ,   #{item.AX}
+      ,   #{item.AY}
+      ,   #{item.AZ}
+      ,   #{item.BA}
+      ,   #{item.BB}
+      ,   #{item.BC}
+      ,   #{item.BD}
+      ,   #{item.BE}
+      ,   #{item.BF}
+      ,   #{item.BG}
+      ,   #{item.BH}
+      ,   #{item.BI}
+      ,   #{item.BJ}
+      ,   #{item.BK}
+      ,   #{item.BL}
+      ,   #{item.BM}
+      ,   #{item.BN}
+      ,   #{item.BO}
+      ,   #{item.BP}
+      ,   #{item.BQ}
+      ,   #{item.BR}
+      ,   #{item.BS}
+      ,   #{item.BT}
+      ,   #{item.BU}
+      ,   #{item.BV}
+      ,   #{item.BW}
+      ,   #{item.BX}
+      ,   #{item.BY}
+      ,   #{item.BZ}
+      ,   enc_bigdata.date_invert(#{item.CA})
+      ,   enc_bigdata.date_invert(#{item.CB})
+      ,   #{item.CC}
+      ,   #{item.CD}
+      ,   #{item.CE}
+      ,   #{item.CF}
+      ,   #{item.CG}
+      ,   enc_bigdata.date_invert(#{item.CH})
+      ,   #{item.CI}
+      ,   #{item.CJ}
+      ,   #{item.CK}
+      ,   #{item.CL}
+      ,   #{item.CM}
+      ,   #{item.CN}
+      ,   enc_bigdata.date_invert(#{item.CO})
+      ,   enc_bigdata.date_invert(#{item.CP})
+      ,   #{item.CQ}
+      ,   #{item.CR}
+      ,   #{item.CS}
+      ,   #{item.CT}
+      ,   #{item.CU}
+      ,   #{item.CV}
+      ,   #{item.CW}
+      ,   #{item.CX}
+      ,   #{item.CY}
+      ,   #{item.CZ}
+      ,   #{item.DA}
+      ,   #{item.DB}
+      ,   #{item.DC}
+      ,   #{item.DD}
+      ,   #{item.DE}
+      ,   #{item.DF}
+      ,   #{item.DG}
+      ,   #{item.DH}
+      ,   #{item.DI}
+      ,   #{item.DJ}
+      ,   #{item.DK}
+      ,   #{item.DL}
+      ,   #{item.DM}
+      ,   #{item.DN}
+      ,   #{item.DO}
+      ,   #{item.DP}
+      ,   #{item.DQ}
+      ,   #{item.DR}
+      ,   #{item.DS}
+      ,   #{item.DT}
+      ,   #{item.DU}
+      ,   #{item.DV}
+      ,   #{item.DW}
+      ,   #{item.DX}
+      ,   #{item.DY}
+      ,   #{item.DZ}
+      ,   #{item.EA}
+      ,   #{item.EB}
+      ,   #{item.EC}
+      ,   #{item.ED}
+      ,   #{item.EE}
+      ,   #{item.EF}
+      ,   #{item.EG}
+      ,   #{item.EH}
+      ,   #{item.EI}
+      ,   #{item.EJ}
+      ,   #{item.EK}
+      ,   #{item.EL}
+      ,   #{item.EM}
+      ,   #{item.EN}
+      ,   #{item.EO}
+      ,   #{item.EP}
+      ,   #{item.EQ}
+      ,   #{item.ER}
+      ,   enc_bigdata.date_invert(#{item.ES})
+      ,   #{item.ET}
+      ,   enc_bigdata.date_invert(#{item.EU})
+      ,   #{item.EV}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 공동물류_입고 -->
+   <insert id = "insertLogisInw"  parameterType="hashMap">
+      insert into tb_en_com_wrhsn_stats_s
+      ( 
+          com_inw_pk  
+       ,   empty_place
+       ,  IoNO
+       ,  PONO
+       ,  RecvDT
+       ,  RecvTP
+       ,  BatchNO
+       ,  SupplierCD
+       ,  RowSeq
+       ,  RecvPlanDT
+       ,    RecvCfmDT
+       ,    Stat
+       ,   substat
+       ,   ErrTxt
+       ,   Remark
+       ,   RegUser
+       ,   UdtUser
+       ,   RegDate
+       ,   UdtDate
+       ,   UpNo
+       ,   IONO_1
+       ,   ITEMCD
+       ,   LOT1
+       ,   LOT2
+       ,   WaitZone
+       ,   RecvDT_1
+       ,   ORDQTY
+       ,   INSPECTQTY
+       ,   Reason
+       ,   ItemSTAT
+       ,   LOT
+       ,  InspectStat
+       ,  InspectCFMDT
+       ,  AdjustSTAT
+       ,  Remark_1
+       ,  ERRTXT_1
+       ,  RegUser_1
+       ,  UdtUser_1
+       ,  RegDate_1
+       ,    UdtDate_1
+       ,    UpNo_1
+       ,   type
+       ,   ItemCD_1
+       ,   ItemNM
+       ,   Flag
+       ,   BarcodeA
+       ,   BarcodeB
+       ,   BarcodeC
+       ,   HandleFlag
+       ,   ShortCD
+       ,   ShortNM
+       ,   AccountsCD
+       ,   SetFlag
+       ,   PurchaseDiv
+       ,   InPrice
+       ,   OutPrice
+       ,   TexType
+       ,   ItemDivA
+       ,   ItemDivB
+       ,   ItemDivC
+       ,  ItemBrand
+       ,  ItemLine
+       ,  ItemType
+       ,  ItemGender
+       ,  ItemCategory
+       ,  ItemProdYear
+       ,  ItemSeason
+       ,  ItemNo
+       ,    ItemSize
+       ,    ItemColor
+       ,   GoodsDiv
+       ,   KeepType
+       ,   StandardType
+       ,   BoxPerQty
+       ,   PLTPerQty
+       ,   PLTPerBoxQty
+       ,   Width
+       ,   Length
+       ,   Height
+       ,   Weight
+       ,   BoxCBM
+       ,   SumWLH
+       ,   CBM
+       ,   StockManage
+       ,   InOutManage
+       ,   LOTManage
+       ,   ProcessFlag
+       ,   AssignFlag
+       ,   ExpirydateFlag
+       ,  MixNoItem
+       ,  SingleFlag
+       ,  RMK
+       ,  RegistDate
+       ,  RegistUser
+       ,  ModifyDate
+       ,  ModifyUser
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+         'com_inw'
+      ,   #{item.AL, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   enc_bigdata.date_invert(#{item.D})
+      ,   #{item.E}
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   enc_bigdata.date_invert(#{item.I})
+      ,   enc_bigdata.date_invert(#{item.J})
+      ,   #{item.K}
+      ,   #{item.L}
+      ,   #{item.M}
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   enc_bigdata.date_invert(#{item.Q})
+      ,   enc_bigdata.date_invert(#{item.R})
+      ,   #{item.S}
+      ,   #{item.T}
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   enc_bigdata.date_invert(#{item.Y})
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   #{item.AC}
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   #{item.AF}
+      ,   #{item.AG}
+      ,   #{item.AH}
+      ,   #{item.AI}
+      ,   #{item.AJ}
+      ,   #{item.AK}
+      ,   enc_bigdata.date_invert(#{item.AL})
+      ,   enc_bigdata.date_invert(#{item.AM})
+      ,   #{item.AN}
+      ,   #{item.AO}
+      ,   #{item.AP}
+      ,   #{item.AQ}
+      ,   #{item.AR}
+      ,   #{item.AS}
+      ,   #{item.AT}
+      ,   #{item.AU}
+      ,   #{item.AV}
+      ,   #{item.AW}
+      ,   #{item.AX}
+      ,   #{item.AY}
+      ,   #{item.AZ}
+      ,   #{item.BA}
+      ,   #{item.BB}
+      ,   #{item.BC}
+      ,   #{item.BD}
+      ,   #{item.BE}
+      ,   #{item.BF}
+      ,   #{item.BG}
+      ,   #{item.BH}
+      ,   #{item.BI}
+      ,   #{item.BJ}
+      ,   #{item.BK}
+      ,   #{item.BL}
+      ,   #{item.BM}
+      ,   #{item.BN}
+      ,   #{item.BO}
+      ,   #{item.BP}
+      ,   #{item.BQ}
+      ,   #{item.BR}
+      ,   #{item.BS}
+      ,   #{item.BT}
+      ,   #{item.BU}
+      ,   #{item.BV}
+      ,   #{item.BW}
+      ,   #{item.BX}
+      ,   #{item.BY}
+      ,   #{item.BZ}
+      ,   #{item.CA}
+      ,   #{item.CB}
+      ,   #{item.CC}
+      ,   #{item.CD}
+      ,   #{item.CE}
+      ,   #{item.CF}
+      ,   #{item.CG}
+      ,   #{item.CH}
+      ,   #{item.CI}
+      ,   #{item.CJ}
+      ,   #{item.CK}
+      ,   #{item.CL}
+      ,   #{item.CM}
+      ,   enc_bigdata.date_invert(#{item.CN})
+      ,   #{item.CO}
+      ,   enc_bigdata.date_invert(#{item.CP})
+      ,   #{item.CQ}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 공동물류_반품 -->
+   <insert id = "insertLogisRtn"  parameterType="hashMap">
+      insert into com_rtn 
+      (
+         com_rtn_pk  
+       ,   empty_place
+       ,  IONO
+       ,  InvoiceNo
+       ,  ReturnDate
+       ,  RtnCfmDate
+       ,  ReturnType
+       ,  Returner
+       ,  ReturnName
+       ,  OrderNo
+       ,    Carrier
+       ,    Address
+       ,   PAY
+       ,   Reason
+       ,   Tel
+       ,   Remark
+       ,   RetStat
+       ,   RegUser
+       ,   RegDate
+       ,   UdtUser
+       ,   UdtDate
+       ,   OriginInvNO
+       ,   CUST_USE_NO
+       ,   IONO_1
+       ,   Itemcd
+       ,   ReturnQty
+       ,   AGradeQty
+       ,   RGradeQty
+       ,   MenuDate
+       ,   ExpDate
+       ,   LOT
+       ,  RegUser_1
+       ,  RegDate_1
+       ,  UdtUser_1
+       ,  UdtDate_1
+       ,  ItemCD_1
+       ,  ItemNM
+       ,  Flag
+       ,  BarcodeA
+       ,    BarcodeB
+       ,    BarcodeC
+       ,   HandleFlag
+       ,   ShortCD
+       ,   ShortNM
+       ,   AccountsCD
+       ,   SetFlag
+       ,   PurchaseDiv
+       ,   InPrice
+       ,   OutPrice
+       ,   TexType
+       ,   ItemDivA
+       ,   ItemDivB
+       ,   ItemDivC
+       ,   ItemBrand
+       ,   ItemLine
+       ,   ItemType
+       ,   ItemGender
+       ,   ItemCategory
+       ,   ItemProdYear
+       ,   ItemSeason
+       ,  ItemNo
+       ,  ItemSize
+       ,  ItemColor
+       ,  GoodsDiv
+       ,  KeepType
+       ,  StandardType
+       ,  BoxPerQty
+       ,  PLTPerQty
+       ,    PLTPerBoxQty
+       ,    Width
+       ,   Length
+       ,   Height
+       ,   Weight
+       ,   BoxCBM
+       ,   SumWLH
+       ,   CBM
+       ,   StockManage
+       ,   InOutManage
+       ,   LOTManage
+       ,   ProcessFlag
+       ,   AssignFlag
+       ,   ExpirydateFlag
+       ,   MixNoItem
+       ,   SingleFlag
+       ,   RMK
+       ,   RegistDate
+       ,   RegistUser
+       ,   ModifyDate
+       ,   ModifyUser
+       )
+      values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'com_rtn'
+      ,   #{item.T , mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   enc_bigdata.date_invert(#{item.D})
+      ,   enc_bigdata.date_invert(#{item.E})
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   #{item.K}
+      ,   #{item.L}
+      ,   #{item.M}
+      ,   #{item.N}
+      ,   #{item.O}
+      ,   #{item.P}
+      ,   #{item.Q}
+      ,   enc_bigdata.date_invert(#{item.R})
+      ,   #{item.S}
+      ,   enc_bigdata.date_invert(#{item.T})
+      ,   #{item.U}
+      ,   #{item.V}
+      ,   #{item.W}
+      ,   #{item.X}
+      ,   #{item.Y}
+      ,   #{item.Z}
+      ,   #{item.AA}
+      ,   #{item.AB}
+      ,   #{item.AC}
+      ,   #{item.AD}
+      ,   #{item.AE}
+      ,   enc_bigdata.date_invert(#{item.AF})
+      ,   #{item.AG}
+      ,   enc_bigdata.date_invert(#{item.AH})
+      ,   #{item.AI}
+      ,   #{item.AJ}
+      ,   #{item.AK}
+      ,   #{item.AL}
+      ,   #{item.AM}
+      ,   #{item.AN}
+      ,   #{item.AO}
+      ,   #{item.AP}
+      ,   #{item.AQ}
+      ,   #{item.AR}
+      ,   #{item.AS}
+      ,   #{item.AT}
+      ,   #{item.AU}
+      ,   #{item.AV}
+      ,   #{item.AW}
+      ,   #{item.AX}
+      ,   #{item.AY}
+      ,   #{item.AZ}
+      ,   #{item.BA}
+      ,   #{item.BB}
+      ,   #{item.BC}
+      ,   #{item.BD}
+      ,   #{item.BE}
+      ,   #{item.BF}
+      ,   #{item.BG}
+      ,   #{item.BH}
+      ,   #{item.BI}
+      ,   #{item.BJ}
+      ,   #{item.BK}
+      ,   #{item.BL}
+      ,   #{item.BM}
+      ,   #{item.BN}
+      ,   #{item.BO}
+      ,   #{item.BP}
+      ,   #{item.BQ}
+      ,   #{item.BR}
+      ,   #{item.BS}
+      ,   #{item.BT}
+      ,   #{item.BU}
+      ,   #{item.BV}
+      ,   #{item.BW}
+      ,   #{item.BX}
+      ,   #{item.BY}
+      ,   #{item.BZ}
+      ,   #{item.CA}
+      ,   #{item.CB}
+      ,   #{item.CC}
+      ,   #{item.CD}
+      ,   #{item.CE}
+      ,   #{item.CF}
+      ,   enc_bigdata.date_invert(#{item.CG})
+      ,   #{item.CH}
+      ,   enc_bigdata.date_invert(#{item.CI})
+      ,   #{item.CJ}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 마이창고반품 -->
+   <insert id = "insertWareRtn"  parameterType="hashMap">
+      insert into myw_rtn 
+      (  
+         myw_rtn_pk
+       ,   NO
+       ,  진행상황
+       ,  구분
+       ,  신청일자
+       ,  접수일자
+       ,  회수일자
+       ,  고객명
+       ,  도착지
+       ,  보내는사람
+       ,    기존송장
+       ,    반품송장
+       ,   상품명
+       )
+       values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'myw_rtn'
+      ,   #{item.D, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   #{item.B}
+      ,   #{item.C}
+      ,   enc_bigdata.date_invert(#{item.D})
+      ,   enc_bigdata.date_invert(#{item.E})
+      ,   enc_bigdata.date_invert(#{item.F})
+      ,   #{item.G}
+      ,   #{item.H}
+      ,   #{item.I}
+      ,   #{item.J}
+      ,   #{item.K}
+      ,   #{item.L}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 마이창고출고 -->
+   <insert id = "insertWareExw"  parameterType="hashMap">
+      insert into myw_exw 
+      ( 
+         myw_exw_pk 
+       ,    Sn
+       ,  출고일자
+       ,  고객명
+       ,  상품명
+       ,  모델명
+       ,  바코드
+       ,  수량
+       )
+       values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'myw_exw'
+      ,   #{item.B, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   enc_bigdata.date_invert(#{item.B})
+      ,   #{item.C}
+      ,   #{item.D}
+      ,   #{item.E}
+      ,   #{item.F}
+      ,   #{item.G}
+      )
+      </foreach>
+   </insert>
+   
+   <!-- 마이창고입고 -->
+   <insert id = "insertWareInw"  parameterType="hashMap">
+      insert into myw_inw 
+      (
+         myw_inw_pk  
+       ,   NO
+       ,  입고일자
+       ,  고객명
+       ,  상품명
+       ,  모델명
+       ,  바코드
+       ,  입고수량
+       ,  비고
+       )
+       values 
+   <foreach collection="excelContent"  item="item" separator=",">
+      (
+      enc_bigdata.enc_bigdata_seq( 
+          'myw_inw'
+      ,   #{item.AD, mode=IN, jdbcType=VARCHAR}
+         ) 
+      ,   #{item.A}
+      ,   enc_bigdata.date_invert(#{item.B})
+      ,   #{item.C}
+      ,   #{item.D}
+      ,   #{item.E}
+      ,   #{item.F}
+      ,   #{item.G}
+      ,   #{item.H}
+      )
+      </foreach>
+   </insert>
+
+</mapper>
